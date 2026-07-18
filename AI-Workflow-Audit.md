@@ -19,6 +19,7 @@
 | Debug Python code | Collaborate with AI | AI helps find bugs, but I verify the solution. |
 | Write LinkedIn posts | Delegate to AI (Review) | AI drafts the post, I edit it before publishing. |
 | Summarize research papers | Fully Automate | AI can summarize accurately and quickly. |
+| improving Tenserflow/Pytorch |Collaborate with AI | AI hepls me to distinguish the code between tenserflow or pytorch.
 
 ---
 
