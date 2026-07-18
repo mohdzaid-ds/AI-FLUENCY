@@ -19,6 +19,7 @@
 | Write LinkedIn posts | Delegate to AI (Review) | AI drafts the post, I edit it before publishing. |
 | Summarize research papers | Fully Automate | AI can summarize accurately and quickly. |
 | improving Tenserflow/Pytorch |Collaborate with AI | AI hepls me to distinguish the code between tenserflow or pytorch.
+| Organize project files and push code to GitHub | Just me | Version control and repository management are core development skills I should perform myself.
 
 
 ---
