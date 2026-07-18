@@ -24,7 +24,7 @@
 
 ---
 
-## three Target Tasks Assingment
+## Three Target Tasks Assingment
 
 ### Task 1
 Learn FastAPI
@@ -56,13 +56,16 @@ Success Definition
 - Finish before deadline.
 - Understand every stage.
 - Push working code to GitHub.
+  
 
 ### Task 4 
 Summarize AIML rearch papers.
 
 Sucess Defination
 
-- Summarize papers with help of AI 
+- Summarize papers with help of AI
+
+  
 
 ### Task 5 
 Understand Tenserflow and Pytorch 
