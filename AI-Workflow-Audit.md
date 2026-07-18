@@ -61,15 +61,15 @@ Summarize AIML rearch papers.
 
 Sucess Defination
 
--summarize papers with help of AI 
+- Summarize papers with help of AI 
 
 ### task 5 
 Understand Tenserflow and Pytorch 
 
 Success Defination 
 
--start with basis of both 
--read papers
--learn both 'cuz are important for different usecase.
--builds projects to better understand.
+- Start with basis of both 
+- Read papers
+- Learn both 'cuz are important for different usecase.
+- Builds projects to better understand.
 
