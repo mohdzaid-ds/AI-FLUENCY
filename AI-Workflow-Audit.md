@@ -2,11 +2,11 @@
 
 ## About Me
 
-- Name: Zaid
+- Name:  Mohd Zaid
 - Current Role: FlyRank Backend AI Engineering Intern
 - Goals:
   - Learn FastAPI
-  - Become an AI Engineer
+  - Become an AIML Engineer
   - Build Backend Projects
 
 ---
