@@ -23,7 +23,7 @@
 
 ---
 
-## five Target Tasks
+## Five Target Tasks
 
 ### Task 1
 Learn FastAPI
