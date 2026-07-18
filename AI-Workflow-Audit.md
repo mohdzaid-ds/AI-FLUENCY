@@ -6,7 +6,6 @@
 - Current Role: FlyRank Backend AI Engineering Intern
 - Goals:
   - Learn FastAPI
-  - Become an AIML Engineer
   - Build Backend Projects
 
 ---
@@ -20,6 +19,7 @@
 | Write LinkedIn posts | Delegate to AI (Review) | AI drafts the post, I edit it before publishing. |
 | Summarize research papers | Fully Automate | AI can summarize accurately and quickly. |
 | improving Tenserflow/Pytorch |Collaborate with AI | AI hepls me to distinguish the code between tenserflow or pytorch.
+
 
 ---
 
@@ -55,3 +55,21 @@ Success Definition
 - Finish before deadline.
 - Understand every stage.
 - Push working code to GitHub.
+
+### task 4 
+Summarize AIML rearch papers.
+
+Sucess Defination
+
+-summarize papers with help of AI 
+
+### task 5 
+Understand Tenserflow and Pytorch 
+
+Success Defination 
+
+-start with basis of both 
+-read papers
+-learn both 'cuz are important for different usecase.
+-builds projects to better understand.
+
