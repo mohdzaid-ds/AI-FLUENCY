@@ -42,6 +42,6 @@ The goal of this assignment is to analyze my weekly workflow, identify where AI 
 
 ## Author
 
-**Zaid**
+** MohdZaid**
 
 FlyRank Backend AI Engineering Intern
