@@ -1,15 +1,71 @@
-# Week 1 Assignment 2
-## Why it matters
-Once you know what you’re proving and the action, the pages almost choose themselves: a place to land, the work that proves it, who you are, and how to act. And getting your free tools open this week means nothing stands between you and starting next week.
+# Assignment 2 – Portfolio Sitemap & AI Toolkit Setup
 
-## One Claim
-I am an aspiring AI/ML Engineer building AI-powered backend applications to solve real-world business problems.
+## Overview
 
-## One Person
-A technical hiring manager evaluating AI/ML engineering candidates.
+This folder contains my submission for **Assignment 2** of the FlyRank Backend AI Engineering Internship AI Fluency track.
 
-## One Action
-Invite me for an interview.
+The purpose of this assignment is to plan a simple portfolio that guides a hiring manager from my landing page to the desired action—inviting me for an interview. It also includes configuring my AI toolkit and using Claude AI to review and improve my portfolio structure.
 
-## Proof Statement
-I am an aspiring AI/ML Engineer building AI-powered backend applications to solve real-world business problems. My portfolio is designed for a technical hiring manager evaluating AI/ML engineering candidates, with the goal of demonstrating my ability to apply AI, machine learning, and backend development to practical challenges and earning an invitation for an interview. While my CV and LinkedIn profile can list my education, skills, and experience, they cannot fully demonstrate how I think, solve problems, or build real AI solutions. This portfolio provides that evidence through hands-on projects, technical documentation, and continuous learning.
+---
+
+## Assignment Objectives
+
+- Create a simple portfolio sitemap.
+- Focus only on essential pages that support my claim and desired action.
+- Set up AI tools:
+  - Claude
+  - ChatGPT
+  - Gemini
+  - Perplexity
+- Configure a Claude Project with:
+  - My Proof Statement
+  - Custom Instructions
+  - AI Tutor guidance
+- Use Claude to pressure-test my portfolio sitemap and identify improvements.
+
+---
+
+## Portfolio Sitemap
+
+The planned portfolio consists of four pages:
+
+- **Home** – Introduces who I am and my value proposition.
+- **Projects** – Demonstrates my technical skills through real-world work.
+- **About** – Provides a brief introduction and career background.
+- **Contact** – Makes it easy for recruiters to reach me.
+
+---
+
+## Deliverables
+
+This folder includes:
+
+- Portfolio sitemap sketch
+- Screenshot of the configured Claude Project
+- Screenshot of the pressure-test prompt and Claude's response
+- Assignment documentation
+
+---
+
+## Learning Outcome
+
+Through this assignment, I learned how to:
+
+- Design a focused portfolio structure.
+- Build a portfolio around a single claim and desired action.
+- Configure an AI workspace for long-term learning.
+- Use AI feedback to improve portfolio planning.
+
+---
+
+## Goal
+
+My goal is to build a professional portfolio that demonstrates my ability to develop AI-powered backend applications and helps technical hiring managers confidently invite me for an interview.
+
+---
+
+## Author
+
+**Mohd Zaid**  
+Aspiring Backend AI Engineer  
+FlyRank Backend AI Engineering Internship
