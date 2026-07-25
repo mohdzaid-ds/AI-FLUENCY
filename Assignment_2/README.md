@@ -15,8 +15,6 @@ The purpose of this assignment is to plan a simple portfolio that guides a hirin
 - Set up AI tools:
   - Claude
   - ChatGPT
-  - Gemini
-  - Perplexity
 - Configure a Claude Project with:
   - My Proof Statement
   - Custom Instructions
