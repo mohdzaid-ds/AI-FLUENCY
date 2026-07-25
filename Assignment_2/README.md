@@ -1,6 +1,6 @@
 # Week 1 Assignment 2
 
-One Claim
+## One Claim
 I am an aspiring AI/ML Engineer building AI-powered backend applications to solve real-world business problems.
 
 One Person
