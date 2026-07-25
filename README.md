@@ -1,6 +1,6 @@
 # AI-FLUENCY
 
-## AI Fluency Workflow Audit
+##  Assignment_1  AI Fluency Workflow Audit
 
 This repository contains my submission for the **FlyRank AI Fluency – Workflow Audit** assignment.
 
