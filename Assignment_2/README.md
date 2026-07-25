@@ -11,7 +11,6 @@ The purpose of this assignment is to plan a simple portfolio that guides a hirin
 # Folder Structure
 
 Assignment-2/
-
   │── README.md
   │── portfolio-sitemap.jpg
   │── claude-project.png
