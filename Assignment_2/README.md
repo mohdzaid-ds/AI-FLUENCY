@@ -64,8 +64,4 @@ My goal is to build a professional portfolio that demonstrates my ability to dev
 
 ---
 
-## Author
 
-**Mohd Zaid**  
-Aspiring Backend AI Engineer  
-FlyRank Backend AI Engineering Internship
