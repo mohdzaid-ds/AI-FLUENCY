@@ -1,5 +1,5 @@
 # Week 1 Assignment 2
-##Why it matters
+## Why it matters
 Once you know what you’re proving and the action, the pages almost choose themselves: a place to land, the work that proves it, who you are, and how to act. And getting your free tools open this week means nothing stands between you and starting next week.
 
 ## One Claim
