@@ -1,15 +1,16 @@
-Week 1 Assignment-2
+## Week 1 Assignment-2
 
-One Claim
+# One Claim
 I am an aspiring AI/ML Engineer building AI-powered backend applications to solve real-world business problems.
 
-One Person
+# One Person
 A technical hiring manager evaluating AI/ML engineering candidates.
 
-One Action
+# One Action
 Invite me for an interview.
 
-Proof Statement
+# Proof Statement
+
 I am an aspiring AI/ML Engineer building AI-powered backend applications to solve real-world business problems.
 My portfolio is designed for a technical hiring manager evaluating AI/ML engineering candidates,
 with the goal of demonstrating my ability to apply AI, machine learning,
