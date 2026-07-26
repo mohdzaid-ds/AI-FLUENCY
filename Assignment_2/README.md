@@ -9,7 +9,6 @@ The purpose of this assignment is to plan a simple portfolio that guides a hirin
 ---
 
 # Folder Structure
-
 Assignment-2/
 │
 ├── README.md
@@ -21,6 +20,7 @@ Assignment-2/
 ├── response-1.png
 ├── response-2.png
 └── response-3.png
+
 
 ## Assignment Objectives
 
