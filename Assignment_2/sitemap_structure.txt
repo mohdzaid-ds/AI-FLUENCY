@@ -1,1 +1,123 @@
 
+--------------------------------------------------------
+                    NAVBAR
+--------------------------------------------------------
+Logo (Zaid) | Home | About | Projects | Contact
+--------------------------------------------------------
+
+                    HERO
+--------------------------------------------------------
+Hi, I'm
+
+Mohd Zaid
+
+Aspiring Backend AI Engineer
+
+I build AI-powered backend applications using Python,
+FastAPI, Machine Learning, and Generative AI to solve
+real-world business problems.
+
+[View Projects]   [Contact Me]
+
+--------------------------------------------------------
+
+                ABOUT ME
+--------------------------------------------------------
+
+I'm Mohd Zaid, an aspiring Backend AI Engineer currently
+completing the FlyRank Backend AI Engineering Internship.
+
+I enjoy building backend applications powered by AI and
+Machine Learning. My goal is to create scalable APIs,
+intelligent automation systems, and real-world AI
+solutions while continuously improving my backend
+engineering skills.
+
+--------------------------------------------------------
+
+                SKILLS
+--------------------------------------------------------
+
+Languages
+• Python
+• SQL
+
+Backend
+• FastAPI
+• CRUD API
+
+AI / ML
+• TensorFlow
+• Scikit-learn
+• Pandas
+• NumPy
+• Matplotlib
+
+
+
+Tools
+• Git
+• GitHub
+• VS Code
+• Claude
+
+
+--------------------------------------------------------
+
+                PROJECTS
+--------------------------------------------------------
+
+Career Recommendation System
+
+✔ NLP
+✔ Cosine Similarity
+✔ Python
+✔ Recommendation Engine
+
+--------------------------------------------
+
+Hand Gesture Volume & Brightness Controller
+
+✔ Computer Vision
+✔ MediaPipe
+✔ OpenCV
+
+--------------------------------------------
+
+CRUD API
+
+✔ FastAPI
+✔ SQLite
+✔ Pydantic
+✔ REST API
+
+--------------------------------------------------------
+
+            CURRENT LEARNING
+--------------------------------------------------------
+
+• Backend AI Engineering
+• FastAPI
+• LangChain
+• RAG
+• AI Agents
+• Docker
+
+--------------------------------------------------------
+
+                CONTACT
+--------------------------------------------------------
+
+Email
+
+LinkedIn
+
+GitHub
+
+--------------------------------------------------------
+
+Footer
+
+© 2026 Mohd Zaid
+
+Building AI-powered backend applications.
