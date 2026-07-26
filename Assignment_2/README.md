@@ -11,14 +11,16 @@ The purpose of this assignment is to plan a simple portfolio that guides a hirin
 # Folder Structure
 
 Assignment-2/
-  │── README.md
-  │── sitemap.jpg
-  │── respone 1.png
-  |__ respone 2.png
-  |__ response 3.png
-  |__ sitemap_structure.txt
-  |__ sitemap.png
-  └── pressure-test.png
+│
+├── README.md
+├── sitemap_structure.txt
+├── sitemap.jpg
+├── sitemap.png
+├── claude_project.png
+├── pressure-test.png
+├── response-1.png
+├── response-2.png
+└── response-3.png
 
 ## Assignment Objectives
 
