@@ -12,8 +12,12 @@ The purpose of this assignment is to plan a simple portfolio that guides a hirin
 
 Assignment-2/
   │── README.md
-  │── portfolio-sitemap.jpg
-  │── claude-project.png
+  │── sitemap.jpg
+  │── respone 1.png
+  |__ respone 2.png
+  |__ response 3.png
+  |__ sitemap_structure.txt
+  |__ sitemap.png
   └── pressure-test.png
 
 ## Assignment Objectives
