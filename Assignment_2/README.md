@@ -13,13 +13,12 @@ Assignment-2/
 │
 ├── README.md
 ├── sitemap_structure.txt
-├── sitemap.jpg
 ├── sitemap.png
 ├── claude_project.png
 ├── pressure-test.png
 ├── response-1.png
 ├── response-2.png
-└── response-3.png
+|── response-3.png
 
 
 ## Assignment Objectives
