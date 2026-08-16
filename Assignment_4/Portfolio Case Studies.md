@@ -1,21 +1,3 @@
-PORTFOLIO
-│
-├── Home
-│
-├── About
-│
-├── Projects
-│   ├── Project 1
-│   ├── Project 2
-│   └── Project 3
-│
-└── Contact
-
-
-
-
-
-
 
 # Portfolio Case Studies
 
