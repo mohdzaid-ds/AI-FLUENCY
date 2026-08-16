@@ -1,16 +1,3 @@
-
-Project
-│
-├── The Problem
-├── What I Did
-├── What Came of It
-└── Technologies / Tools
-
-
-
-
-
-
 # Portfolio Case Studies
 
 ## 1. Voice Card
