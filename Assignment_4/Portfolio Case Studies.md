@@ -68,7 +68,7 @@ Secondary goals include building a professional GitHub portfolio and preparing f
 
 ## 4. Contact / CTA
 
-_To be completed._
+Interested in my AI/ML work? Let's connect.
 
 ---
 
@@ -76,8 +76,8 @@ _To be completed._
 
 ### Before — Generic AI Version
 
-_To be completed._
+"I developed a robust and scalable FastAPI-based task management API that efficiently handles CRUD operations and provides a seamless way to manage to-do items."
 
 ### After — My Edited Version
 
-_To be completed._
+"I built a To-Do API with FastAPI that lets users create, view, update, and delete tasks. I implemented the CRUD endpoints and added validation for invalid or missing task data."
