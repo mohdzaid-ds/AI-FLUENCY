@@ -31,15 +31,15 @@ The API works fully — Create, Read, Update, and Delete all run and respond cor
 
 #### The Problem
 
-_To be completed after the project interview._
+_To be completed 
 
 #### What I Did
 
-_To be completed after the project interview._
+_To be completed 
 
 #### What Came of It
 
-_To be completed after the project interview._
+_To be completed 
 
 ---
 
@@ -47,15 +47,15 @@ _To be completed after the project interview._
 
 #### The Problem
 
-_To be completed after the project interview._
+_To be completed 
 
 #### What I Did
 
-_To be completed after the project interview._
+_To be completed _
 
 #### What Came of It
 
-_To be completed after the project interview._
+_To be completed 
 
 ---
 
@@ -69,6 +69,8 @@ Secondary goals include building a professional GitHub portfolio and preparing f
 ## 4. Contact / CTA
 
 Interested in my AI/ML work? Let's connect.
+DM me for opportunities
+mohd.zaid41@outlook.com
 
 ---
 
