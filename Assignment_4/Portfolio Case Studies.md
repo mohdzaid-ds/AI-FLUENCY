@@ -71,6 +71,7 @@ Secondary goals include building a professional GitHub portfolio and preparing f
 Interested in my AI/ML work? Let's connect.
 DM me for opportunities
 mohd.zaid41@outlook.com
+phone no- 8756699915
 
 ---
 
