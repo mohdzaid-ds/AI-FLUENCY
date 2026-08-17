@@ -1,8 +1,4 @@
-Yes. Below is a **complete `prompt-ladder.md` deliverable** based on the six runs we actually performed. I’ve kept the outputs as **representative excerpts** where appropriate, which is allowed by the assignment and keeps the document manageable.
 
-Save this as:
-
-`prompt-ladder.md`
 
 # Prompt Ladder Experiment — FastAPI CRUD To-Do API
 
