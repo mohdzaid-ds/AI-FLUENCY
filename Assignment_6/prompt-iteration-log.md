@@ -20,15 +20,13 @@ AI helps find bugs, but I verify the solution.
 import numpy as np
 import pandas as pd
 
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+#from sklearn.model_selection import train_test_split
+#from sklearn.preprocessing import StandardScaler
+#from sklearn.linear_model import LogisticRegression
+#from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 
-# ============================================================
 # 1. CUSTOM DATASET
-# ============================================================
 
 data = {
     "age": [
@@ -66,9 +64,7 @@ data = {
 df = pd.DataFrame(data)
 
 
-# ============================================================
 # 2. DISPLAY DATASET
-# ============================================================
 
 print("\nDataset:")
 print(df.head())
@@ -80,17 +76,15 @@ print("\nClass distribution:")
 print(df["churn"].value_counts())
 
 
-# ============================================================
+
 # 3. PREPARE FEATURES AND TARGET
-# ============================================================
 
 X = df.drop("churn", axis=1)
 y = df["churn"]
 
 
-# ============================================================
+
 # 4. TRAIN / TEST SPLIT
-# ============================================================
 
 X_train, X_test, y_train, y_test = train_test_split(
     X,
@@ -101,9 +95,9 @@ X_train, X_test, y_train, y_test = train_test_split(
 )
 
 
-# ============================================================
+
 # 5. FEATURE SCALING
-# ============================================================
+
 
 scaler = StandardScaler()
 
@@ -111,9 +105,9 @@ X_train_scaled = scaler.fit_transform(X_train)
 X_test_scaled = scaler.fit_transform(X_test)
 
 
-# ============================================================
+
 # 6. TRAIN MODEL
-# ============================================================
+
 
 model = LogisticRegression(
     random_state=42,
@@ -123,18 +117,17 @@ model = LogisticRegression(
 model.fit(X_train_scaled, y_train)
 
 
-# ============================================================
 # 7. MAKE PREDICTIONS
-# ============================================================
+
 
 y_pred_probability = model.predict_proba(X_test_scaled)[:, 1]
 
 y_pred = (y_pred_probability > 0.7).astype(int)
 
 
-# ============================================================
+
 # 8. EVALUATE MODEL
-# ============================================================
+
 
 accuracy = accuracy_score(y_test, y_pred)
 
@@ -148,9 +141,8 @@ print("\nConfusion Matrix:")
 print(confusion_matrix(y_test, y_pred))
 
 
-# ============================================================
+
 # 9. TEST A NEW CUSTOMER
-# ============================================================
 
 new_customer = pd.DataFrame({
     "age": [45],
