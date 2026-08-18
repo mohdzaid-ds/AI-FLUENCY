@@ -258,8 +258,8 @@ new_customer_scaled = scaler.transform(new_customer)  # fixed
 Once you fix bugs 1 and 2, rerun — your accuracy/classification report numbers will likely change (probably improve, since the model will actually be evaluated fairly), and the new-customer prediction will become meaningful instead of arbitrary.
 
 ### What Changed and Why
-...
 
+This was my baseline prompt. I intentionally used a simple one-line instruction without providing a role, additional context, examples, output requirements, or a debugging process. The response successfully identified the major preprocessing issues and also mentioned additional concerns about the decision threshold and the small dataset size
 ---
 
 ## 4. Version 2 — Role Assignment
@@ -275,7 +275,6 @@ Role Assignment
 
 ### What Changed and Why
 ...
-This was my baseline prompt. I intentionally used a simple one-line instruction without providing a role, additional context, examples, output requirements, or a debugging process. The response successfully identified the major preprocessing issues and also mentioned additional concerns about the decision threshold and the small dataset size
 ---
 
 ## 5. Version 3 — Context and Motivation
