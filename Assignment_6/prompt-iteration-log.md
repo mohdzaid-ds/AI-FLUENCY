@@ -268,14 +268,98 @@ This was my baseline prompt. I intentionally used a simple one-line instruction 
 Role Assignment
 
 ### Prompt
-...
+Act as a senior machine learning engineer with expertise in Python, scikit-learn, and production ML pipelines.
+
+Debug this Python code and tell me what's wrong.
+
+[ EXACT CODE ]
 
 ### Output
+
+## Code Review: Churn Prediction Pipeline
+
+Reviewing this as I would a PR — there are two data-leakage bugs that would fail review outright, plus several production-readiness gaps that wouldn't block the PR but I'd flag as follow-ups.
+
+---
+
+### 🔴 Blocking: Test set is being fit, not transformed
+
+```python
+X_test_scaled = scaler.fit_transform(X_test)   # line ~103
+```
+
+This is textbook train/test contamination. `fit_transform` recomputes mean/std from the test set itself, so `X_test_scaled` lives on a different scale than what the model was trained on. Every downstream metric — accuracy, precision/recall, confusion matrix — is evaluating the model against a distorted input space. In a real pipeline this is the kind of bug that inflates offline metrics and then falls apart in production because inference-time data was never fit on anything.
+
+```python
+X_test_scaled = scaler.transform(X_test)   # fit once, on train only
+```
+
+### 🔴 Blocking: Inference-time scaler refit on a single row
+
+```python
+new_customer_scaled = scaler.fit_transform(new_customer)   # line ~155
+```
+
+Same root cause, worse blast radius. This is your inference path — the thing that'll get called in production for every real prediction. Fitting `StandardScaler` on a single row sets std to 0 for every feature, which either throws a divide-by-zero warning and returns 0s, or produces degenerate scaled values depending on your sklearn version. Either way `model.predict_proba` is being fed nonsense. This is the bug that would show up as "model works in notebook, returns garbage in prod" — because your serving code and your training code are silently using different scaling logic.
+
+```python
+new_customer_scaled = scaler.transform(new_customer)
+```
+
+**Root cause for both:** the scaler is being treated as stateless when it's stateful. This class of bug disappears if you wrap preprocessing + model in a single `sklearn.pipeline.Pipeline` — then there's only one `.fit()` call (on train) and one `.transform()`/`.predict()` path, and it's structurally impossible to accidentally re-fit at inference:
+
+```python
+from sklearn.pipeline import Pipeline
+
+pipe = Pipeline([
+    ("scaler", StandardScaler()),
+    ("model", LogisticRegression(random_state=42, max_iter=1000)),
+])
+pipe.fit(X_train, y_train)
+y_pred_proba = pipe.predict_proba(X_test)[:, 1]
 ...
+churn_probability = pipe.predict_proba(new_customer)[0][1]
+```
+
+This also makes the object trivially joblib-serializable as one artifact instead of two things you have to remember to save/load together.
+
+---
+
+### 🟡 Non-blocking, flag for follow-up
+
+**Hardcoded 0.7 threshold, undocumented.**
+```python
+y_pred = (y_pred_probability > 0.7).astype(int)
+```
+Default `.predict()` uses 0.5. A 0.7 threshold is a legitimate business decision (e.g., only flag high-confidence churners to avoid alert fatigue on the retention team) — but as written it looks arbitrary. In production I'd want this threshold pulled out as a named constant or config value with a comment explaining the precision/recall tradeoff it encodes, and ideally chosen via a PR curve rather than guessed.
+
+**No cross-validation.** A single 70/30 split on 30 rows means your "accuracy" is one number computed on 9 test samples — it has enormous variance and isn't something I'd trust to compare model versions. Even `StratifiedKFold` with k=5 would give a far more stable signal, small dataset notwithstanding.
+
+**Dataset is synthetic and perfectly separable-looking** (churn correlates almost monotonically with age/charges/support_calls/contract_months). Fine for a demo, but worth calling out explicitly in comments so nobody mistakes these metrics for something transferable to real customer data.
+
+**`max_iter=100`** — works here only because the data is tiny and clean. I'd default new LogisticRegression code to `max_iter=1000` as a habit so it doesn't bite you the first time this gets pointed at a real, larger, messier dataset.
+
+**No `random_state` set on the model's solver behavior beyond what's given**, and no persistence step (`joblib.dump`) — not bugs, but if this is headed toward "production pipeline" as the prompt frames it, model serialization and a `requirements.txt`/pinned sklearn version belong in scope too.
+
+---
+
+### Summary table
+
+| Issue | Severity | Type |
+|---|---|---|
+| `scaler.fit_transform(X_test)` | Critical | Data leakage |
+| `scaler.fit_transform(new_customer)` | Critical | Inference-time leakage (worse) |
+| 0.7 threshold undocumented | Medium | Code clarity / process |
+| No cross-validation | Medium | Evaluation robustness |
+| `max_iter=100` | Low | Latent bug (won't trigger on this data) |
+| No `Pipeline` abstraction | Low (root cause of both criticals) | Architecture |
+
+Fix the two critical leakage bugs first — everything else is polish, but those two mean the numbers you're currently looking at aren't measuring what you think they're measuring.
 
 ### What Changed and Why
-...
----
+
+Adding a specific expert role changed the response from a general debugging analysis into a more production-oriented code review. The model still identified the two main scaler-related bugs, but it also evaluated the code from a production ML perspective. It introduced severity levels, discussed inference-time failures, recommended using an sklearn Pipeline, and identified additional concerns such as cross-validation and model serialization.
+
 
 ## 5. Version 3 — Context and Motivation
 
