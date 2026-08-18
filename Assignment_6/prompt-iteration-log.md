@@ -174,8 +174,7 @@ print("Prediction:", prediction)
 if prediction == 1:
     print("Customer is predicted to churn.")
 else:
-    print("Customer is predicted to stay.")
-...
+    print("Customer is predicted t
 
 ### Error
 ...
