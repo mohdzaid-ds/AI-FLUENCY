@@ -172,10 +172,12 @@ else:
     print("Customer is predicted t
 
 ### Error
-...
+
+there are some intentional bugs in the code.
 
 ### Goal
-...
+
+"Given a customer's age, monthly charges, number of support calls, and contract length, will this customer leave the company?"
 
 ---
 
