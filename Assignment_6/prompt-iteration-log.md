@@ -489,15 +489,166 @@ Compared with V2, the response placed more emphasis on learning and understandin
 Few-Shot Examples
 
 ### Prompt
-...
+Act as a senior machine learning engineer with expertise in Python, scikit-learn, and production ML pipelines.
+
+I am an AI/ML student working on a customer churn prediction project to improve my understanding of machine learning pipelines and debugging. My goal is not just to get the code fixed, but to understand the root cause of each problem so I can verify the solution myself.
+
+Here is an example of the debugging style I want:
+
+Example:
+
+Problem:
+A model is trained using a StandardScaler fitted on the training data, but the test data is scaled using a newly fitted scaler.
+
+Root cause:
+The model was trained in one feature space but evaluated in a different feature space because the test data was normalized using different mean and standard deviation values.
+
+Fix:
+Fit the scaler only on the training data and use transform() on the test data.
+
+Verification:
+Check that the scaler parameters used for the test data are the same parameters learned from the training data.
+
+Use this style of reasoning when debugging my code. Do not assume that the example describes the bugs in my code; use it only as an example of the level of explanation and verification I want.
+
+Please debug the following Python code and identify any implementation or machine-learning logic issues that could cause incorrect results or unreliable predictions.
+
+[PASTE THE EXACT SAME CODE HERE]
 
 ### Output
-...
 
-### What Changed and Why
-...
+## Debugging Report — Churn Prediction Pipeline
+
+Following the Problem → Root cause → Fix → Verification structure for each issue found.
+
+### Problem 1
+The test set is scaled with `scaler.fit_transform(X_test)` instead of `scaler.transform(X_test)`.
+
+```python
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.fit_transform(X_test)   # ← bug
+```
+
+**Root cause:**
+`StandardScaler` is stateful — `.fit()` computes `mean_` and `scale_` (std) from whatever data is passed to it, and `.transform()` applies those stored values to new data. Calling `fit_transform()` on `X_test` discards the training set's learned mean/std and computes a brand-new mean/std from the test set instead. The model was trained on features centered/scaled according to the *training* distribution, but is then evaluated on features centered/scaled according to the *test* distribution — two different coordinate systems.
+
+**Fix:**
+```python
+X_test_scaled = scaler.transform(X_test)
+```
+Fit happens once, on training data only. Every other dataset only ever calls `.transform()`.
+
+**Verification:**
+Check that the scaler parameters applied to the test data are the same ones learned from training:
+```python
+scaler.fit(X_train)
+print(scaler.mean_, scaler.scale_)          # the "official" params
+
+leaky_scaler = StandardScaler().fit(X_test)
+print(leaky_scaler.mean_, leaky_scaler.scale_)   # compare — these differ
+```
+If the two printouts differ, that confirms the test data was transformed using the wrong parameters before the fix, and matches after it (since `transform()` no longer refits).
 
 ---
+
+### Problem 2
+The single-row inference input is scaled with `scaler.fit_transform(new_customer)` instead of `scaler.transform(new_customer)`.
+
+```python
+new_customer_scaled = scaler.fit_transform(new_customer)   # ← bug
+```
+
+**Root cause:**
+Same underlying mechanism as Problem 1, with an additional failure mode: `new_customer` is a single row, so its standard deviation is 0 (there is no spread around a mean computed from one point). `StandardScaler.transform()` divides by `scale_`, so fitting on one row produces a zero (or near-zero, sklearn substitutes a tiny epsilon to avoid a hard crash) denominator. The resulting scaled values bear no relationship to where this customer actually falls relative to the training population — which is the entire purpose of scaling.
+
+**Fix:**
+```python
+new_customer_scaled = scaler.transform(new_customer)
+```
+
+**Verification:**
+Fit a throwaway scaler on the single row and inspect its learned std:
+```python
+probe = StandardScaler().fit(new_customer)
+print(probe.scale_)   # ~0 for every feature — confirms the mechanism
+```
+Then confirm the correct path reuses the training-fitted object:
+```python
+print(scaler.mean_)   # should be identical before and after this fix — same scaler instance, no new .fit() call
+```
+
+---
+
+### Problem 3
+Predictions use a hardcoded threshold of 0.7 instead of the standard 0.5, with no justification recorded in the code.
+
+```python
+y_pred = (y_pred_probability > 0.7).astype(int)
+prediction = int(churn_probability > 0.7)
+```
+
+**Root cause:**
+`LogisticRegression.predict()` defaults to a 0.5 cutoff on `predict_proba`, which is the threshold that minimizes total misclassifications under equal cost assumptions. Raising the cutoff to 0.7 shifts the precision/recall tradeoff: the model now only labels "churn" when it's substantially confident, which increases precision but lowers recall (more actual churners get missed / classified as false negatives). This isn't a syntax bug — it's a modeling decision that's currently undocumented, so it's indistinguishable from an accidental typo.
+
+**Fix:**
+Either revert to the standard threshold, or keep 0.7 but make the decision explicit and justified:
+```python
+CHURN_DECISION_THRESHOLD = 0.5  # or 0.7, with a comment on why
+y_pred = (y_pred_probability > CHURN_DECISION_THRESHOLD).astype(int)
+```
+
+**Verification:**
+Compare recall on the churn class across thresholds to see the tradeoff directly:
+```python
+for t in [0.5, 0.7]:
+    pred = (y_pred_probability > t).astype(int)
+    report = classification_report(y_test, pred, output_dict=True)
+    print(t, "recall(churn=1):", report['1']['recall'])
+```
+Recall for class 1 should drop as the threshold rises from 0.5 to 0.7 — confirming the mechanism, not just asserting it.
+
+---
+
+### Problem 4
+The train/test split leaves only 9 rows in the test set (30 total rows × 30%), so every reported metric is computed on a very small sample.
+
+**Root cause:**
+This isn't a line of code that's "wrong" — `train_test_split` is behaving correctly — but with `n=30`, a 70/30 split yields a 9-row test set. Each individual misclassified row swings accuracy by roughly 1/9 ≈ 11%. Metrics computed on that few samples carry high variance and shouldn't be interpreted as a reliable estimate of real-world performance.
+
+**Fix:**
+Not a code fix so much as an evaluation-methodology change. For a dataset this small, k-fold cross-validation gives a far more stable estimate than a single hold-out split:
+```python
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=42)
+scores = cross_val_score(model, X, y, cv=cv, scoring="accuracy")
+print(scores, scores.mean(), scores.std())
+```
+
+**Verification:**
+Check the spread (`scores.std()`) across folds — a wide spread confirms the single-split accuracy number isn't representative, and directly shows why the original 9-sample metric shouldn't be trusted as a point estimate.
+
+---
+
+### Consolidated fix (sections 5 and 9)
+
+```python
+# 5. FEATURE SCALING
+scaler = StandardScaler()
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)          # fixed — was fit_transform
+
+# 9. TEST A NEW CUSTOMER
+new_customer_scaled = scaler.transform(new_customer)  # fixed — was fit_transform
+```
+
+### Self-check before you move on
+Before rerunning: predict whether accuracy will go up, down, or become unpredictable once Problems 1 and 2 are fixed, and explain why in terms of feature-space mismatch (not just "because it's fixed now"). Then run it and see if your reasoning matches the outcome — if it doesn't, that's a signal to re-derive Problem 1's mechanism rather than move on to the next task.
+
+### What Changed and Why
+Adding a few-shot example made the response more consistently follow the demonstrated debugging pattern.
+The model repeatedly used the Problem → Root cause → Fix → Verification structure for each issue. Compared with V3, the response became more consistent in how each problem was analyzed and verified.
+
+The example therefore influenced the model's response style and organization without requiring me to explicitly specify the final output structure.
 
 ## 7. Version 5 — Output Structure
 
