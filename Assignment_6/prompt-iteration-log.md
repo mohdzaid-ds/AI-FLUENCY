@@ -656,14 +656,220 @@ The example therefore influenced the model's response style and organization wit
 Output Structure
 
 ### Prompt
-...
+Act as a senior machine learning engineer with expertise in Python, scikit-learn, and production ML pipelines.
+
+I am an AI/ML student working on a customer churn prediction project to improve my understanding of machine learning pipelines and debugging. My goal is not just to get the code fixed, but to understand the root cause of each problem so I can verify the solution myself.
+
+Here is an example of the debugging style I want:
+
+Example:
+
+Problem:
+A model is trained using a StandardScaler fitted on the training data, but the test data is scaled using a newly fitted scaler.
+
+Root cause:
+The model was trained in one feature space but evaluated in a different feature space because the test data was normalized using different mean and standard deviation values.
+
+Fix:
+Fit the scaler only on the training data and use transform() on the test data.
+
+Verification:
+Check that the scaler parameters used for the test data are the same parameters learned from the training data.
+
+Use this style of reasoning when debugging my code. Do not assume that the example describes the bugs in my code; use it only as an example of the level of explanation and verification I want.
+
+Now debug the following Python code.
+
+Return your response using this exact structure:
+
+## 1. Summary
+Briefly describe the overall state of the code and identify how many significant issues you found.
+
+## 2. Issues Found
+
+For every issue, use this format:
+
+### Issue [number]: [short name]
+
+**Problem:** What is wrong?
+
+**Root Cause:** Why does the problem occur?
+
+**Impact:** What effect can it have on the model, evaluation, or predictions?
+
+**Fix:** Show the corrected code.
+
+**Verification:** Explain how I can verify that the fix works.
+
+## 3. Additional Observations
+List any concerns that are not necessarily bugs but could affect model reliability, maintainability, or production readiness.
+
+## 4. Corrected Code
+Provide the relevant corrected sections of the code.
+
+## 5. Verification Checklist
+Provide a concise checklist I can use to verify that the debugging fixes were applied correctly.
+
+Do not assume that every unusual design choice is a bug. Clearly distinguish between confirmed bugs, potential issues, and design decisions.
+
+[PASTE THE EXACT SAME CODE HERE]
 
 ### Output
-...
+## 1. Summary
+
+The pipeline is structurally sound (correct use of `train_test_split` with `stratify`, sensible model choice for a binary classification problem, reasonable evaluation metrics chosen). However, there are **2 confirmed bugs** — both instances of the same underlying mistake (refitting a scaler where it should only transform) — plus **1 design decision that needs justification** and **1 evaluation-methodology concern**. The two confirmed bugs are serious: one corrupts your evaluation metrics, the other corrupts your actual inference output.
+
+---
+
+## 2. Issues Found
+
+### Issue 1: Test set scaled with a newly fitted scaler instead of the training-fitted one
+
+**Problem:**
+```python
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.fit_transform(X_test)   # ← bug
+```
+
+**Root Cause:**
+`StandardScaler` is stateful: `.fit()` computes `mean_` and `scale_` from whatever data is passed to it, and `.transform()` applies those stored values to new data. Calling `fit_transform()` on `X_test` discards the mean/std learned from training and computes an entirely new mean/std from the test set itself. The model's decision boundary was learned in the coordinate space defined by the training data's scaler — feeding it test data scaled to a different mean/std evaluates it in a space it was never trained on.
+
+**Impact:**
+Every metric downstream of this — accuracy, precision, recall, confusion matrix — is measuring the model against distorted inputs. The reported performance does not reflect how the model would actually behave on properly scaled data. This can make a good model look bad, a bad model look good, or just produce noisy, non-reproducible numbers.
+
+**Fix:**
+```python
+X_test_scaled = scaler.transform(X_test)
+```
+
+**Verification:**
+```python
+scaler.fit(X_train)
+print(scaler.mean_, scaler.scale_)                    # training params
+
+leaky = StandardScaler().fit(X_test)
+print(leaky.mean_, leaky.scale_)                       # compare — will differ
+```
+If these differ (they will, since train/test are different subsets), that confirms the pre-fix code was evaluating in the wrong feature space. After the fix, `X_test_scaled` should be produced using exactly the `scaler.mean_` / `scaler.scale_` printed above — no second `.fit()` call occurs.
+
+---
+
+### Issue 2: New customer (inference input) scaled with a newly fitted scaler
+
+**Problem:**
+```python
+new_customer_scaled = scaler.fit_transform(new_customer)   # ← bug
+```
+
+**Root Cause:**
+Same mechanism as Issue 1, but with a more severe consequence: `new_customer` is a single row. The standard deviation of a single data point is 0 (no variance around a mean computed from one sample). `StandardScaler.transform()` divides by `scale_`, so fitting on one row drives that denominator to zero (sklearn typically substitutes a tiny epsilon rather than raising a hard `ZeroDivisionError`, but the resulting scaled values are still degenerate).
+
+**Impact:**
+This is your inference/serving path — the code that represents what would run in production for a real prediction request. The scaled values fed into `model.predict_proba` bear no relationship to where this customer's raw values (age, charges, etc.) actually sit relative to the training population. The resulting `churn_probability` is not a trustworthy number, even though the code runs without error — this is the most dangerous kind of bug because nothing crashes or warns loudly.
+
+**Fix:**
+```python
+new_customer_scaled = scaler.transform(new_customer)
+```
+
+**Verification:**
+```python
+probe = StandardScaler().fit(new_customer)
+print(probe.scale_)     # ~0 for every feature — confirms the degenerate-fit mechanism
+```
+Then confirm the corrected line reuses the training-fitted scaler instance (no new `.fit()` call), e.g. by checking `scaler.mean_` is unchanged before and after this line executes.
+
+---
+
+### Issue 3 (design decision requiring justification, not a confirmed bug): Hardcoded 0.7 classification threshold
+
+**Problem:**
+```python
+y_pred = (y_pred_probability > 0.7).astype(int)
+prediction = int(churn_probability > 0.7)
+```
+
+**Root Cause:**
+`LogisticRegression.predict()` defaults to a 0.5 threshold on `predict_proba`. Here the threshold is manually raised to 0.7, with no comment explaining why. This is not inherently wrong — a business case for prioritizing precision over recall (e.g., avoiding false-alarm retention offers) can justify it — but as written it's indistinguishable from an accidental value.
+
+**Impact:**
+Raising the threshold from 0.5 to 0.7 increases precision and decreases recall on the churn class — more actual churners will be classified as "will stay" (false negatives). If unintentional, this silently changes what the model is optimized to report.
+
+**Fix (if 0.5 was intended):**
+```python
+y_pred = (y_pred_probability > 0.5).astype(int)
+```
+**Fix (if 0.7 is intentional):** keep it, but name and document it:
+```python
+CHURN_DECISION_THRESHOLD = 0.7  # chosen to prioritize precision; see [ticket/rationale]
+y_pred = (y_pred_probability > CHURN_DECISION_THRESHOLD).astype(int)
+```
+
+**Verification:**
+```python
+for t in [0.5, 0.7]:
+    pred = (y_pred_probability > t).astype(int)
+    r = classification_report(y_test, pred, output_dict=True)
+    print(t, "recall(churn=1):", r['1']['recall'], "precision(churn=1):", r['1']['precision'])
+```
+Recall should drop and precision should rise as the threshold increases from 0.5 to 0.7 — confirms the tradeoff is real and lets you decide which threshold matches your actual goal.
+
+---
+
+## 3. Additional Observations
+
+- **Test set size (9 rows):** With 30 total rows and a 30% split, the test set is only 9 samples. Any single misclassification swings accuracy by ~11%. Not a bug, but the reported metrics shouldn't be treated as statistically reliable — worth switching to `StratifiedKFold` cross-validation for a more stable estimate on data this small.
+- **`max_iter=100`:** This is sklearn's default and converges fine on this small, clean dataset — not currently a problem, but a hardcoded low `max_iter` is a common source of silent `ConvergenceWarning`s on larger/messier data. Consider `max_iter=1000` as a defensive default going forward.
+- **Synthetic, near-perfectly-separable data:** Churn correlates almost monotonically with all four features. Fine for a learning exercise, but metrics from this dataset won't transfer as intuition to noisier real-world data — worth noting in any write-up so the numbers aren't over-interpreted.
+- **No `Pipeline` abstraction:** Not a bug, but structurally, wrapping `StandardScaler` + `LogisticRegression` in a single `sklearn.pipeline.Pipeline` would make Issues 1 and 2 structurally impossible (only one `.fit()` call exists, on training data, and everything else is `.transform()`/`.predict()`). Worth adopting as a habit for future pipelines.
+- **No model/scaler persistence:** For a "production pipeline" framing, there's no `joblib.dump`/`load` step to save the fitted scaler + model together, which is usually necessary once this leaves a notebook.
+
+---
+
+## 4. Corrected Code
+
+```python
+# ============================================================
+# 5. FEATURE SCALING
+# ============================================================
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)          # fixed — was fit_transform
+
+
+# ============================================================
+# 9. TEST A NEW CUSTOMER
+# ============================================================
+
+new_customer = pd.DataFrame({
+    "age": [45],
+    "monthly_charges": [65],
+    "support_calls": [5],
+    "contract_months": [6]
+})
+
+new_customer_scaled = scaler.transform(new_customer)   # fixed — was fit_transform
+
+churn_probability = model.predict_proba(new_customer_scaled)[0][1]
+prediction = int(churn_probability > 0.7)   # keep or revert to 0.5 — see Issue 3
+```
+
+---
+
+## 5. Verification Checklist
+
+- [ ] `X_test_scaled` is produced via `scaler.transform(X_test)`, not `fit_transform`
+- [ ] `new_customer_scaled` is produced via `scaler.transform(new_customer)`, not `fit_transform`
+- [ ] `scaler.mean_` and `scaler.scale_` are identical whether inspected after scaling `X_train`, `X_test`, or `new_customer` (i.e., the scaler was fit exactly once)
+- [ ] Re-run the classification report before/after the fix and confirm the numbers change (leakage was actually affecting output)
+- [ ] Decide explicitly whether the 0.7 threshold is intentional; if so, document it as a named constant with rationale
+- [ ] (Optional but recommended) Replace the single train/test split with `StratifiedKFold` cross-validation and check the std of scores to gauge metric reliability
+- [ ] (Optional, structural) Refactor scaler + model into a single `sklearn.pipeline.Pipeline` to make the fit/transform bug class impossible going forward
 
 ### What Changed and Why
-...
-
+We're testing whether explicit output constraints make the response more predictable and easier to evaluate.
 ---
 
 ## 8. Version 6 — Step Decomposition
@@ -672,58 +878,388 @@ Output Structure
 Step Decomposition
 
 ### Prompt
-...
+Act as a senior machine learning engineer with expertise in Python, scikit-learn, and production ML pipelines.
+
+I am an AI/ML student working on a customer churn prediction project to improve my understanding of machine learning pipelines and debugging. My goal is not just to get the code fixed, but to understand the root cause of each problem so I can verify the solution myself.
+
+Here is an example of the debugging style I want:
+
+Example:
+
+Problem:
+A model is trained using a StandardScaler fitted on the training data, but the test data is scaled using a newly fitted scaler.
+
+Root cause:
+The model was trained in one feature space but evaluated in a different feature space because the test data was normalized using different mean and standard deviation values.
+
+Fix:
+Fit the scaler only on the training data and use transform() on the test data.
+
+Verification:
+Check that the scaler parameters used for the test data are the same parameters learned from the training data.
+
+Use this style of reasoning when debugging my code. Do not assume that the example describes the bugs in my code; use it only as an example of the level of explanation and verification I want.
+
+Before producing your answer, analyze the code systematically using these steps:
+
+1. Understand the intended purpose of the complete machine-learning pipeline.
+2. Trace the data from the original dataset through preprocessing, training, evaluation, and new-customer prediction.
+3. Check whether training, testing, and inference data are processed consistently.
+4. Check for data leakage and incorrect use of preprocessing objects.
+5. Check the model-training and prediction logic.
+6. Check whether the evaluation methodology produces trustworthy metrics.
+7. Distinguish confirmed bugs from potential issues and intentional design decisions.
+8. For every confirmed bug, determine the root cause, impact, minimal fix, and a way to verify the fix.
+9. Review the pipeline for additional reliability or production-readiness concerns.
+
+Return your response using this exact structure:
+
+## 1. Summary
+
+Briefly describe the overall state of the code and identify how many significant issues you found.
+
+## 2. Issues Found
+
+For every issue, use this format:
+
+### Issue [number]: [short name]
+
+**Problem:** What is wrong?
+
+**Root Cause:** Why does the problem occur?
+
+**Impact:** What effect can it have on the model, evaluation, or predictions?
+
+**Fix:** Show the corrected code.
+
+**Verification:** Explain how I can verify that the fix works.
+
+## 3. Additional Observations
+
+List any concerns that are not necessarily bugs but could affect model reliability, maintainability, or production readiness.
+
+## 4. Corrected Code
+
+Provide the relevant corrected sections of the code.
+
+## 5. Verification Checklist
+
+Provide a concise checklist I can use to verify that the debugging fixes were applied correctly.
+
+Do not assume that every unusual design choice is a bug. Clearly distinguish between confirmed bugs, potential issues, and design decisions.
+
+Here is the code to debug:
+
+[PASTE THE EXACT SAME CODE HERE]
 
 ### Output
-...
+## 1. Summary
+
+Tracing the pipeline end-to-end (raw data → split → scaling → training → evaluation → inference), the overall structure is sound: the split is stratified, the model choice fits a binary classification task, and the evaluation metrics chosen are appropriate for churn prediction. However, tracing how the `scaler` object is used at each stage reveals it is refit twice when it should only be fit once — a data-processing consistency violation that appears in two places. I found **2 confirmed bugs** (same root mechanism, different blast radius), **1 design decision that needs explicit justification**, and **1 evaluation-methodology concern**. No issues were found in the model-training logic itself (`model.fit` is called correctly, once, on training data only).
+
+---
+
+## 2. Issues Found
+
+### Issue 1: Test data scaled with a newly fitted scaler instead of the training-fitted one
+
+**Problem:**
+```python
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.fit_transform(X_test)   # ← bug
+```
+
+**Root Cause:**
+`StandardScaler` is stateful — `.fit()` computes `mean_`/`scale_` from whatever data it's given, `.transform()` applies those stored values to new data. Calling `.fit_transform()` on `X_test` throws away the mean/std learned from `X_train` and computes fresh ones from the test set. Tracing the data flow: the model in step 6 learns its coefficients relative to the *training* scaler's coordinate space, but step 7 evaluates it on data expressed in the *test* scaler's coordinate space — two different feature spaces that happen to share a variable name.
+
+**Impact:**
+Every metric computed downstream — accuracy, precision, recall, confusion matrix — reflects the model's performance in a distorted space, not its actual performance. This can make the reported numbers arbitrarily better or worse than reality, and the result isn't reproducible in any meaningful sense (it depends on the test set's own statistics, not the model's true generalization).
+
+**Fix:**
+```python
+X_test_scaled = scaler.transform(X_test)
+```
+
+**Verification:**
+```python
+scaler.fit(X_train)
+print(scaler.mean_, scaler.scale_)                 # training-derived params
+
+leaky = StandardScaler().fit(X_test)
+print(leaky.mean_, leaky.scale_)                    # will differ from above
+```
+Confirming these differ demonstrates the pre-fix code evaluated in the wrong space. After the fix, no second `.fit()` call occurs on `X_test`, so `scaler.mean_`/`scale_` stay fixed at the training-derived values throughout.
+
+---
+
+### Issue 2: New customer (inference input) scaled with a newly fitted scaler
+
+**Problem:**
+```python
+new_customer_scaled = scaler.fit_transform(new_customer)   # ← bug
+```
+
+**Root Cause:**
+Identical mechanism to Issue 1, but tracing this specific data path matters: `new_customer` is a single row. Standard deviation of one data point is 0. `StandardScaler.transform()` divides by `scale_`, so fitting on a single row drives that denominator to (effectively) zero, producing degenerate scaled values rather than a meaningful representation of how this customer compares to the training population.
+
+**Impact:**
+This is the pipeline's actual inference/serving path — what would run in production per prediction request. Because nothing crashes or throws a visible error, the resulting `churn_probability` looks like a normal float but carries no real signal. This is more dangerous than Issue 1 precisely because it fails silently on the code path that matters most for real usage.
+
+**Fix:**
+```python
+new_customer_scaled = scaler.transform(new_customer)
+```
+
+**Verification:**
+```python
+probe = StandardScaler().fit(new_customer)
+print(probe.scale_)     # ~0 for every feature — confirms the degenerate fit
+```
+Then confirm the fixed line does not call `.fit()` at all — `scaler.mean_` should be identical before and after this line runs, matching the value fit on `X_train`.
+
+---
+
+### Issue 3 (design decision requiring justification, not a confirmed bug): Hardcoded 0.7 classification threshold
+
+**Problem:**
+```python
+y_pred = (y_pred_probability > 0.7).astype(int)
+prediction = int(churn_probability > 0.7)
+```
+
+**Root Cause:**
+`LogisticRegression.predict()` defaults to 0.5. Here it's manually raised to 0.7 with no comment or named constant, so — checking the prediction logic in isolation — there's no way to tell whether this is deliberate (e.g., prioritizing precision to avoid wasting retention offers) or a leftover/typo value.
+
+**Impact:**
+Raising the threshold from 0.5 → 0.7 trades recall for precision on the churn class: fewer false alarms, but more actual churners misclassified as "will stay" (false negatives). If unintentional, this silently changes the model's practical behavior without changing anything about the model itself.
+
+**Fix (if 0.5 was intended):**
+```python
+y_pred = (y_pred_probability > 0.5).astype(int)
+```
+**Fix (if 0.7 is intentional):**
+```python
+CHURN_DECISION_THRESHOLD = 0.7  # prioritizes precision — document rationale here
+y_pred = (y_pred_probability > CHURN_DECISION_THRESHOLD).astype(int)
+```
+
+**Verification:**
+```python
+for t in [0.5, 0.7]:
+    pred = (y_pred_probability > t).astype(int)
+    r = classification_report(y_test, pred, output_dict=True)
+    print(t, "recall:", r['1']['recall'], "precision:", r['1']['precision'])
+```
+Recall should fall and precision should rise as `t` increases — confirms the tradeoff is real, letting you pick the threshold that matches your actual business goal rather than an arbitrary one.
+
+---
+
+## 3. Additional Observations
+
+- **Test set size (9 rows):** 30 total rows × 30% split → 9 test samples. One misclassified row swings accuracy ~11%. Not a code bug, but the evaluation methodology (step 6 of the analysis) means these metrics shouldn't be trusted as stable estimates. `StratifiedKFold` cross-validation would give a materially more trustworthy signal on data this small.
+- **`max_iter=100`:** Default value, converges fine here since the data is small and clean — not currently a bug, but a common latent issue once real-world (larger, noisier) data is substituted in. Defaulting to `max_iter=1000` is a reasonable habit.
+- **Synthetic, near-perfectly-separable dataset:** All four features correlate almost monotonically with churn. Fine for a learning exercise, but worth explicitly noting so any reported accuracy isn't mistaken for something that would transfer to messier real data.
+- **No `Pipeline` abstraction:** Wrapping `StandardScaler` + `LogisticRegression` in a single `sklearn.pipeline.Pipeline` would make Issues 1 and 2 structurally impossible — only one `.fit()` call would exist (on training data), and every other call would necessarily be `.transform()`/`.predict()`. Worth adopting going forward as a bug-class-elimination habit, not just a fix for this instance.
+- **No persistence step:** No `joblib.dump`/`load` for the fitted scaler + model. Not a bug in a notebook context, but relevant if this is meant to model a production pipeline, since scaler and model need to be saved/loaded together to avoid exactly the kind of train/inference mismatch seen in Issue 2.
+
+---
+
+## 4. Corrected Code
+
+```python
+# ============================================================
+# 5. FEATURE SCALING
+# ============================================================
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+X_test_scaled = scaler.transform(X_test)          # fixed — was fit_transform
+
+
+# ============================================================
+# 9. TEST A NEW CUSTOMER
+# ============================================================
+
+new_customer = pd.DataFrame({
+    "age": [45],
+    "monthly_charges": [65],
+    "support_calls": [5],
+    "contract_months": [6]
+})
+
+new_customer_scaled = scaler.transform(new_customer)   # fixed — was fit_transform
+
+churn_probability = model.predict_proba(new_customer_scaled)[0][1]
+prediction = int(churn_probability > 0.7)   # keep or revert to 0.5 — see Issue 3
+```
+
+---
+
+## 5. Verification Checklist
+
+- [ ] `X_test_scaled` comes from `scaler.transform(X_test)`, not `fit_transform`
+- [ ] `new_customer_scaled` comes from `scaler.transform(new_customer)`, not `fit_transform`
+- [ ] `scaler.mean_` / `scaler.scale_` are identical across every use (train, test, new customer) — confirms a single `.fit()` call
+- [ ] Classification report numbers change after the fix (confirms leakage was actually affecting the pre-fix output)
+- [ ] 0.7 threshold is either reverted to 0.5 or documented as an intentional, named constant
+- [ ] (Optional) Cross-validate with `StratifiedKFold` and inspect score variance to judge how trustworthy the metrics are on this small dataset
+- [ ] (Optional, structural) Refactor scaler + model into a single `sklearn.pipeline.Pipeline` to eliminate this bug class permanently
+
 
 ### What Changed and Why
-...
 
+Adding step decomposition gave the model an explicit process for investigating the code before producing the final answer. The prompt instructed it to trace the data through preprocessing, training, evaluation, and inference; check for data leakage; inspect model logic; evaluate the reliability of the metrics; and distinguish confirmed bugs from design decisions.
+
+Compared with V5, the response more explicitly separated confirmed bugs from non-bug concerns. It identified two confirmed scaler-related bugs, treated the 0.7 threshold as a design decision requiring justification, and separately identified the small test set as an evaluation-methodology concern.
+
+The response also provided a verification checklist, making it easier to validate whether the fixes were actually applied. This showed that step decomposition improved the diagnostic process rather than only changing the formatting of the answer.
 ---
 
 ## 9. Overall Iteration Analysis
 
-### V1 vs V2
-...
+The six prompt versions progressively increased the amount of guidance given to the model.
 
-### V2 vs V3
-...
+### V1 — Naive Prompt
 
-### V3 vs V4
-...
+The baseline prompt successfully identified the major scaler-related bugs, but the response was relatively general. It established how well the model could debug the code with minimal instruction.
 
-### V4 vs V5
-...
+### V2 — Role Assignment
 
-### V5 vs V6
-...
+Adding the senior machine learning engineer role shifted the response toward a production-oriented code review. The response introduced concepts such as PR severity, inference-time failures, production pipelines, and model serialization.
+
+### V3 — Context and Motivation
+
+Adding my background and learning goal changed the response toward a more educational debugging walkthrough. The model focused more heavily on explaining root causes and showing how I could independently verify the issues.
+
+### V4 — Few-Shot Examples
+
+The example demonstrated the desired debugging style. The response consistently followed the Problem → Root Cause → Fix → Verification pattern, showing that examples influenced the organization and reasoning style.
+
+### V5 — Output Structure
+
+Explicit output requirements made the response more predictable and easier to scan. Each issue could be evaluated using consistent fields, making comparison between issues easier.
+
+### V6 — Step Decomposition
+
+The final iteration added an explicit debugging process. The model was instructed to trace the data pipeline, check preprocessing consistency, identify leakage, evaluate the methodology, distinguish bugs from design decisions, and provide verification steps.
+
+### Overall Finding
+
+The progression showed that prompt engineering did not simply make the response longer. Different techniques influenced different aspects of the response. Role assignment influenced the professional perspective, context and motivation influenced the educational focus, few-shot examples influenced reasoning style, output structure influenced consistency, and step decomposition influenced the systematic nature of the analysis.
+
+The final prompt provided the most explicit control over both the debugging process and the resulting output, while the earlier versions demonstrated that even a simple prompt was capable of identifying the most obvious bugs.
 
 ---
 
 ## 10. Claude vs ChatGPT
 
-### Claude Output
-...
-
-### ChatGPT Output
-...
-
-### Comparison
-...
-
----
+Claude identified X and Y and provided a more detailed explanation of the preprocessing problem, while ChatGPT followed the requested five-section structure more strictly. ChatGPT was easier to scan, whereas Claude provided more discussion of production implications.
 
 ## 11. Reusable Prompt Template
 
-...
+Instead of:
+
+I am an AI/ML student working on a customer churn prediction project...
+
+create:
+
+I am a [ROLE] working on [PROJECT/DOMAIN].
+My goal is [GOAL].
 
 ---
 
 ## 12. Key Lessons Learned
 
-1. ...
-2. ...
-3. ...
-4. ...
-5. ...
+# Key Lessons Learned
+
+Through this prompt iteration exercise, I learned that prompt engineering is not simply about making a prompt longer. Different prompting techniques influence different aspects of an AI response.
+
+### 1. A simple prompt can still produce useful results
+
+The naive prompt was able to identify the major scaler-related bugs. This showed me that a good model can solve a debugging problem even with minimal instructions. However, the response did not provide the same level of control over perspective, reasoning process, or output format.
+
+### 2. Role assignment changes the perspective of the response
+
+When I assigned the role of a senior machine learning engineer, the response became more production-oriented. It discussed code-review severity, inference-time problems, production pipelines, and maintainability.
+
+This showed me that role assignment can influence the perspective from which the model analyzes a problem.
+
+### 3. Context and motivation can make the response more relevant
+
+When I explained that I was an AI/ML student and wanted to understand the root causes rather than simply receive fixes, the response became more educational.
+
+The model provided more explanations and verification methods, which better matched my learning objective.
+
+### 4. Few-shot examples demonstrate the desired behavior
+
+The few-shot example caused the model to repeatedly follow the demonstrated:
+
+Problem → Root Cause → Fix → Verification
+
+pattern.
+
+This taught me that examples can be more effective than simply describing the desired response because they demonstrate what the expected behavior looks like.
+
+### 5. Explicit output structure improves consistency
+
+When I explicitly specified the required sections, the response became easier to scan and evaluate.
+
+Instead of allowing the model to decide how to organize the debugging report, I defined the structure I wanted. This is particularly useful when the output needs to be compared across multiple iterations or used as a deliverable.
+
+### 6. Step decomposition improves systematic analysis
+
+The final prompt instructed the model to follow a sequence of debugging steps, including tracing the data pipeline, checking preprocessing consistency, checking for leakage, evaluating model logic, and distinguishing bugs from design decisions.
+
+This helped turn the prompt from a simple request into a defined debugging workflow.
+
+### 7. More detailed prompts are not automatically better
+
+One important lesson was that adding instructions does not guarantee a better answer.
+
+Each technique should have a specific purpose. Adding unnecessary instructions can make a prompt longer without improving the result.
+
+The goal should be to add information that reduces ambiguity and guides the model toward the desired outcome.
+
+### 8. AI output still needs verification
+
+Even though the AI identified the important bugs, I should not automatically accept every recommendation.
+
+For example, the 0.7 classification threshold is not necessarily a programming bug. Whether it is appropriate depends on the business objective and the precision-recall tradeoff.
+
+This reinforced the importance of verifying AI-generated technical explanations rather than blindly applying them.
+
+### 9. Prompt engineering is iterative
+
+The most important lesson from this assignment is that effective prompting is an iterative process.
+
+I started with:
+
+"Debug this Python code and tell me what's wrong."
+
+and progressively added:
+
+- role
+- context
+- motivation
+- examples
+- output structure
+- debugging steps
+
+Each iteration gave me more control over how the model approached and presented the problem.
+
+### 10. The best reusable prompts are task-oriented
+
+A reusable prompt should not depend on my specific customer churn project.
+
+Instead, it should contain general placeholders for:
+
+- the user's role
+- the task
+- the goal
+- relevant context
+- desired output
+- required process
+- the actual input/code
+
+This makes the prompt useful for other debugging or technical-analysis tasks.
