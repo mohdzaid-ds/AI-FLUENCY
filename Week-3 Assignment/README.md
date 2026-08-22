@@ -103,5 +103,79 @@ Portfolio
 ├── Home
 ├── Projects
 ├── About
-├── Resume
 └── Contact
+
+# Step 3 — Identity Kit
+
+## 3.1 Typography
+
+### Selected Fonts
+
+**Heading Font:** Space Grotesk
+
+**Body Font:** Inter
+
+### Typography Rule
+
+- Use Space Grotesk for headings and major titles.
+- Use Inter for body text, descriptions, buttons, navigation, and technical information.
+- Use a maximum of two fonts throughout the portfolio.
+
+### Reason for Selection
+
+Space Grotesk provides a modern technical character that fits an AI/ML and backend engineering portfolio.
+
+Inter provides excellent readability for longer text and technical content.
+
+Together, they create a clean, modern, and professional visual hierarchy without distracting from the projects.
+
+# 3.2 Color Palette
+
+The portfolio will use a restrained four-color palette.
+
+| Role | Color | HEX |
+|---|---|---|
+| Primary | Blue | `#2563EB` |
+| Background | Near White | `#F9FAFB` |
+| Text | Near Black | `#111827` |
+| Accent | Teal | `#14B8A6` |
+
+## Color Usage
+
+### Primary — `#2563EB`
+
+Used for:
+
+- Primary buttons
+- Important links
+- Selected navigation items
+- Key visual highlights
+
+### Background — `#F9FAFB`
+
+Used as the primary page background.
+
+### Text — `#111827`
+
+Used for:
+
+- Headings
+- Body text
+- Project titles
+- Important information
+
+### Accent — `#14B8A6`
+
+Used sparingly for:
+
+- Small highlights
+- Status indicators
+- Minor visual emphasis
+
+## Color Rule
+
+The palette should remain restrained.
+
+The primary blue should provide most of the visual emphasis, while the teal accent should only be used when additional emphasis is necessary.
+
+The portfolio should avoid excessive gradients, neon colors, glowing effects, and unnecessary decorative elements.
