@@ -179,3 +179,40 @@ The palette should remain restrained.
 The primary blue should provide most of the visual emphasis, while the teal accent should only be used when additional emphasis is necessary.
 
 The portfolio should avoid excessive gradients, neon colors, glowing effects, and unnecessary decorative elements.
+
+# 3.3 Logo / Favicon
+
+## Logo Concept
+
+The portfolio will use a simple **MZ monogram** based on my initials.
+
+### Design Direction
+
+- Text: `MZ`
+- Font: Space Grotesk
+- Style: Bold / Semi-Bold
+- Primary Color: `#2563EB`
+- Background: `#F9FAFB`
+- Shape: Minimal square or rounded-square mark
+- Style: Clean and minimal
+
+### Logo Rules
+
+- Keep the logo simple and recognizable.
+- Avoid gradients.
+- Avoid 3D effects.
+- Avoid complex illustrations.
+- Avoid generic AI/robot symbols.
+- Maintain the same visual identity as the rest of the portfolio.
+
+## Favicon
+
+The same `MZ` monogram will be adapted as the website favicon.
+
+The favicon should remain readable at a very small size.
+
+## Reason for Selection
+
+A personal monogram makes the portfolio identifiable while keeping the visual identity professional and understated.
+
+The logo should support the portfolio rather than compete with the project work.
