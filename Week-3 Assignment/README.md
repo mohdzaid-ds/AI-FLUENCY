@@ -358,3 +358,46 @@ A visually impressive image is not automatically a good portfolio image.
 Real project evidence is preferred over AI-generated imagery whenever real evidence is available.
 
 AI-generated visuals will only be used when they add genuine visual value without distracting from the technical work.
+
+# Step 5 — Final Review
+
+## Week 03 Completion Checklist
+
+### Step 1 — One-Line Claim
+
+- [x] Generated multiple claim options
+- [x] Evaluated the options
+- [x] Selected final claim
+- [x] Documented the reasoning
+
+### Step 2 — Content Map
+
+- [x] Defined portfolio pages
+- [x] Defined page sections
+- [x] Selected strongest project
+- [x] Defined project order
+- [x] Defined CTAs
+- [x] Created "Still Need to Gather" list
+
+### Step 3 — Identity Kit
+
+- [x] Selected heading font
+- [x] Selected body font
+- [x] Selected color palette
+- [x] Added HEX codes
+- [x] Defined logo/favicon
+- [x] Created visual style note
+- [x] Defined design rules
+
+### Step 4 — Image Curation
+
+- [x] Defined image selection strategy
+- [x] Prioritized real project evidence
+- [x] Defined AI-image evaluation criteria
+- [x] Documented rejection criteria
+
+### Final Status
+
+**Week 03 planning and design decisions: Completed**
+
+The remaining project screenshots, links, and personal assets will be collected before the actual portfolio website is built.
