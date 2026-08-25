@@ -216,3 +216,37 @@ The favicon should remain readable at a very small size.
 A personal monogram makes the portfolio identifiable while keeping the visual identity professional and understated.
 
 The logo should support the portfolio rather than compete with the project work.
+
+# 3.4 Visual Style Note
+
+## Visual Direction
+
+The portfolio should feel:
+
+- Clean
+- Technical
+- Modern
+- Professional
+- Minimal
+- Evidence-focused
+
+The design should frame the project work rather than compete with it.
+
+## Two-Line Style Note
+
+> **Typography:** Use Space Grotesk for headings and Inter for body text, with clear hierarchy and generous spacing.
+
+> **Visual style:** Use a near-white background, near-black text, restrained blue primary color, and one limited teal accent; keep decoration minimal so the projects and technical proof remain the visual focus.
+
+## Design Rules
+
+1. Keep layouts clean and spacious.
+2. Use no more than two fonts.
+3. Keep the color palette restrained.
+4. Use the teal accent sparingly.
+5. Avoid excessive gradients.
+6. Avoid unnecessary glassmorphism.
+7. Avoid excessive animations.
+8. Prioritize real project screenshots and results.
+9. Keep technical information easy to read.
+10. Let the projects remain the visual focus.
