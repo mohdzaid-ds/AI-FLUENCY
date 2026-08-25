@@ -250,3 +250,111 @@ The design should frame the project work rather than compete with it.
 8. Prioritize real project screenshots and results.
 9. Keep technical information easy to read.
 10. Let the projects remain the visual focus.
+
+# Step 4 — Image Curation & Judgment
+
+## 4.1 Image Strategy
+
+The portfolio will prioritize real project evidence over decorative or AI-generated imagery.
+
+The main principle is:
+
+> Use the best image for the purpose, not simply the most impressive-looking image.
+
+Real project screenshots, outputs, demos, and results will be used whenever available.
+
+---
+
+## 4.2 Required Project Images
+
+### Career Recommendation System ⭐
+
+- [ ] Project screenshot
+- [ ] Input/example screenshot
+- [ ] Recommendation output screenshot
+- [ ] Workflow/architecture
+- [ ] Results/metrics screenshot
+
+### Hand Gesture Brightness & Volume Control
+
+- [ ] Project screenshot
+- [ ] Demo/video
+- [ ] Gesture recognition screenshot
+
+### FastAPI To-Do API
+
+- [ ] Swagger/OpenAPI screenshot
+- [ ] API response screenshot
+- [ ] Project screenshot
+
+### ML Classification & Regression
+
+- [ ] Results screenshot
+- [ ] Evaluation metrics
+- [ ] Visualization/chart
+
+---
+
+## 4.3 Real vs AI-Generated Images
+
+The following decision rule will be used:
+
+```text
+Real project screenshot available?
+        │
+        ├── YES → Use real screenshot
+        │
+        └── NO
+             │
+             ↓
+      Is an image necessary?
+             │
+        ├── NO → Don't use an image
+        │
+        └── YES → Consider AI-generated visual
+
+4.4 Image Selection Criteria
+
+Every candidate image will be evaluated based on:
+
+1-Relevance
+2-Visual consistency
+3-Restraint
+4-Purpose
+5-Authenticity
+
+The image must support the portfolio rather than distract from the actual work.
+
+4.5 Rejected Image
+Decision
+
+Rejected.
+
+Reason
+
+The image looked visually impressive but relied heavily on futuristic 3D/glass effects and generic AI imagery.
+
+It did not provide evidence of my actual engineering work and competed with the real project screenshots.
+
+Because the portfolio should prioritize technical proof, I rejected it.
+
+4.6 Image Judgment Principle
+
+A visually impressive image is not automatically a good portfolio image.
+
+## 4.7 Image Selection Record
+
+### Career Recommendation System
+
+| Image | Source | Purpose | Decision |
+|---|---|---|---|
+| Project screenshot | Real project | Show actual system | Selected |
+| Recommendation output | Real project | Show actual result | Selected |
+| Workflow/architecture | Real project | Explain technical approach | Selected |
+| Generic AI visual | AI-generated | Decorative | Rejected |
+
+### Selection Principle
+
+Real project evidence is preferred over AI-generated imagery whenever real evidence is available.
+
+AI-generated visuals will only be used when they add genuine visual value without distracting from the technical work.
